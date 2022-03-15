@@ -1,0 +1,67 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use POSIX;
+
+my $MAX_PRIMES = 2e9;
+
+sub generate_primes {
+	# expects integer input >= 2
+	my $maxprimes = shift;
+	return (2) if $maxprimes == 2; # trivial case
+	my $mpk = ($maxprimes - 1)/2;
+	my @isprime = (); # $isprime[k] is 1 iff 2k+1 is prime
+	for (my $i = 1; $i <= $mpk; $i++) {
+		$isprime[$i] = 1;
+	}
+	my @primes = (2);
+	my $curr = 1; # in each loop, test if curr * 2 + 1 is prime
+	while ($curr <= ceil(sqrt $maxprimes)) {
+		if ($isprime[$curr]) {
+			# add to list of primes
+			$primes[@primes] = 2*$curr + 1;
+			# set all multiples of $curr in $isprime to 0
+			for (my $i = $curr * 3 + 1; $i <= $mpk; $i += $curr * 2 + 1) {
+				$isprime[$i] = 0;
+				
+			}
+		}
+		$curr += 1;
+	}
+	# add remaining numbers up to $maxprimes to @primes
+	for (my $i = $curr; $i <= $mpk; $i++) {
+		if ($isprime[$i]) {
+			$primes[@primes] = $i*2 +1;
+		}
+	}
+	return @primes;
+}
+
+if (@ARGV == 0) {
+	print "$0: needs an argument\n";
+	exit 1;
+} elsif (@ARGV > 1) {
+	print "$0: too many arguments\n";
+	exit 1;
+} elsif ($ARGV[0] < 2) {
+	print "$0: number must be greater than or equal to 2\n";
+	exit 1;
+} elsif ($ARGV[0] > $MAX_PRIMES) {
+	print "$0: number too big\n";
+	exit 1;
+}
+
+my @primes = generate_primes(int($ARGV[0]));
+foreach (@primes) {
+	print "$_\n"
+}
+
+#
+#my $in = <STDIN>;
+#if ($in eq "y\n") { #strip trailing whitespace somehow
+#	my $result = $number + 2;
+#	print "The result is $result. Have a nice day!\n";
+#} else {
+#	print "I'll take that as a no. Have a nice day!\n";
+#}
+

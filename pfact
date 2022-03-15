@@ -1,0 +1,65 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use bigint;
+use POSIX;
+
+my $MAX_VALUE = 16e14;
+my $PRIME_FILE = "/usr/share/pfact/p4e7.txt";
+my $MAX_FACTORS = 1000;
+
+open(my $infile, "<", $PRIME_FILE) or die "Can't open prime file $PRIME_FILE: $!";
+
+sub prime_factorise {
+	my $value = shift;
+	my $factor = <$infile>;
+	chomp $factor;
+	my %factors_indices = ();
+	keys(%factors_indices) = $MAX_FACTORS;
+	my $max = ceil(sqrt $value);
+	while ($factor <= $max) {
+		if ($value % $factor == 0) {
+			$factors_indices{$factor} = 1;
+			$value /= $factor;
+			while ($value % $factor == 0) {
+				$value /= $factor;
+				$factors_indices{$factor} += 1;
+			}
+		}
+		$factor = <$infile>;
+		chomp $factor;
+	}
+	$factors_indices{$value} = 1 if $value > 1;
+	return %factors_indices;		
+}
+
+if (@ARGV == 0) {
+	print "$0: needs an argument\n";
+	exit 1;
+} elsif (@ARGV > 1) {
+	print "$0: too many arguments\n";
+	exit 1;
+} elsif ($ARGV[0] < 2) {
+	print "$0: number must be greater than or equal to 2\n";
+	exit 1;
+} elsif ($ARGV[0] > $MAX_VALUE) {
+	print "$0: number too big\n";
+	exit 1;
+}
+
+my %factors = prime_factorise(int($ARGV[0]));
+foreach (sort(keys %factors)) {
+	chomp $_;
+	print "$_^$factors{$_}\n";
+}
+
+__END__
+
+=pod
+
+=head1 NAME
+
+testing!
+
+=cut
+
